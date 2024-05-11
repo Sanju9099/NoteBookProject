@@ -1,23 +1,46 @@
-import logo from './logo.svg';
-import './App.css';
+import { useState, useEffect } from 'react';
+import NoteList from './components/NoteList';
+import SearchBar from './components/SearchBar';
 
 function App() {
+  const [notes, setNotes] = useState([]);
+   
+  useEffect(() => {
+    const storedNotes = JSON.parse(localStorage.getItem('notes'));
+    console.log(storedNotes);
+    if (storedNotes) {
+      setNotes(storedNotes);
+    }
+  }, []);
+  
+  useEffect(() => {
+    localStorage.setItem('notes', JSON.stringify(notes));
+  }, [notes]);
+
+  const addNote = (title, description) => {
+    const newNote = { title, description };
+    setNotes([...notes, newNote]);
+  };
+
+  const deleteNote = (index) => {
+    const updatedNotes = notes.filter((_, i) => i !== index);
+    setNotes(updatedNotes);
+  };
+
+  const [searchTerm, setSearchTerm] = useState('');
+  const handleSearch = (term) => {
+    setSearchTerm(term);
+  };
+
+  const filteredNotes = notes.filter((note) =>
+    note.title.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div>
+      <h1 style={{display: 'flex', justifyContent: 'center', alignItems: 'center'}}>Note Book</h1>
+      <SearchBar onSearch={handleSearch} onAddNote={addNote} totalCount={notes.length} resultCount={filteredNotes.length} />
+      <NoteList notes={filteredNotes} onDelete={deleteNote} />
     </div>
   );
 }
